@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sender</title>
+</head>
+<body>
+  <h2>📤 Streaming Camera...</h2>
+  <video id="localVideo" autoplay playsinline muted></video>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <script>
+    // 🔌 Firebase Config (paste your config here)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "...",
+      databaseURL: "https://....firebaseio.com",
+      projectId: "...",
+      storageBucket: "...",
+      messagingSenderId: "...",
+      appId: "..."
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const localVideo = document.getElementById("localVideo");
+    let localStream;
+    let peerConnection = new RTCPeerConnection();
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        localStream = stream;
+        localVideo.srcObject = stream;
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+        return peerConnection.createOffer();
+      })
+      .then(offer => {
+        return peerConnection.setLocalDescription(offer);
+      })
+      .then(() => {
+        db.ref("offer").set(JSON.stringify(peerConnection.localDescription));
+      });
+
+    db.ref("answer").on("value", snapshot => {
+      const answer = snapshot.val();
+      if (!answer) return;
+      const remoteDesc = new RTCSessionDescription(JSON.parse(answer));
+      peerConnection.setRemoteDescription(remoteDesc);
+    });
+  </script>
+</body>
+</html>
