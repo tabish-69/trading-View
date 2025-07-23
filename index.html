@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera & Mic Access</title>
+</head>
+<body>
+  <h1>🎥 Live Camera Feed</h1>
+  <video id="video" autoplay playsinline style="width: 100%; max-width: 500px;"></video>
+
+  <script>
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(function(stream) {
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+      })
+      .catch(function(err) {
+        console.error("Error accessing camera/mic:", err);
+        alert("Permission denied or device not found.");
+      });
+  </script>
+</body>
+</html>
